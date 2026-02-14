@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Calculator, Map, Shield, ArrowRight, Sparkles, TrendingUp, 
   Users, Heart, Wind, Zap, ChevronDown, Star, Award, 
-  Activity, Navigation, CheckCircle, ChevronRight, Lock, Twitter, Linkedin, Github
+  Activity, Navigation, CheckCircle, ChevronRight, Lock, Twitter, Linkedin, Github,
+  User 
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
