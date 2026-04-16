@@ -1,0 +1,35 @@
+cd C:\Users\aksha\OneDrive\Desktop\Airimpact
+
+# Create .gitignore file
+echo "# Environment files
+.env
+.env.local
+.env.production
+
+# Node modules
+node_modules/
+
+# Build files
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Backend specific
+backend/node_modules/
+backend/.env
+
+# Frontend specific
+frontend/node_modules/
+frontend/.env
+frontend/dist/" > .gitignore
