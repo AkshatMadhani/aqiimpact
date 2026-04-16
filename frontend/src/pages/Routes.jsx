@@ -15,7 +15,6 @@ const Routes = () => {
   const [mapboxKey, setMapboxKey] = useState('');
   const [inputKey, setInputKey] = useState('');
   const [showModal, setShowModal] = useState(false);
-  // FIX: combine routes + selectedRoute into ONE state so useEffect fires ONCE not twice
   const [routeState, setRouteState] = useState({ routes: [], selectedRoute: null });
   const { routes, selectedRoute } = routeState;
   const [loading, setLoading] = useState(false);
@@ -24,8 +23,6 @@ const Routes = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markers = useRef([]);
-  // KEY FIX: track how many route layers currently exist on the map
-  // so clearMap never relies on the stale `routes` state
   const layerCount = useRef(0);
 
   const modes = [
@@ -33,8 +30,6 @@ const Routes = () => {
     { value: 'cycling', label: 'Cycling', icon: '🚴', color: '#3B82F6' },
     { value: 'driving', label: 'Driving', icon: '🚗', color: '#EF4444' },
   ];
-
-  // Load saved key on mount
   useEffect(() => {
     if (!isAuthenticated) return;
     if (user?.mapboxApiKey) {
@@ -44,8 +39,6 @@ const Routes = () => {
       setShowModal(true);
     }
   }, [user, isAuthenticated]);
-
-  // Initialize map whenever mapboxKey changes
   useEffect(() => {
     if (mapInstance.current) {
       mapInstance.current.remove();
@@ -84,8 +77,6 @@ const Routes = () => {
       }
     };
   }, [mapboxKey]);
-
-  // FIX: clearMap uses layerCount ref — never depends on stale `routes` state
   const clearMap = () => {
     if (!mapInstance.current) return;
     for (let i = 0; i < layerCount.current; i++) {
@@ -98,8 +89,6 @@ const Routes = () => {
     markers.current = [];
     layerCount.current = 0;
   };
-
-  // Full redraw ONLY when routes array changes (new search)
   useEffect(() => {
     if (!mapInstance.current || routes.length === 0) return;
 
@@ -167,8 +156,6 @@ const Routes = () => {
       });
 
       layerCount.current = routes.length;
-
-      // Custom styled markers
       const coords = routes[0].geometry.coordinates;
 
       const startEl = document.createElement('div');
@@ -215,8 +202,6 @@ const Routes = () => {
           ))
           .addTo(mapInstance.current),
       ];
-
-      // Fit bounds
       const all = routes.flatMap(r => r.geometry.coordinates);
       const bounds = all.reduce((b, c) => b.extend(c), new mapboxgl.LngLatBounds(all[0], all[0]));
       mapInstance.current.fitBounds(bounds, {
@@ -231,10 +216,8 @@ const Routes = () => {
     } else {
       mapInstance.current.once('load', draw);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routes]);
 
-  // Only update paint colors/widths when selection changes — no redraw
   useEffect(() => {
     if (!mapInstance.current || routes.length === 0 || selectedRoute === null) return;
 
@@ -271,7 +254,6 @@ const Routes = () => {
         mapInstance.current.setPaintProperty(`route-glow-${i}`,    'line-opacity', sel ? 0.35 : 0.25);
       }
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoute]);
 
   const handleSaveKey = async () => {
@@ -299,14 +281,12 @@ const Routes = () => {
     if (formData.from.trim().toLowerCase() === formData.to.trim().toLowerCase()) { toast.error('Locations must be different'); return; }
 
     setLoading(true);
-    // Reset in one shot so useEffect doesn't fire mid-clear
     setRouteState({ routes: [], selectedRoute: null });
     clearMap();
 
     try {
       const { data } = await routeAPI.findRoutes(formData);
       if (data.data?.routes?.length > 0) {
-        // Single setState = single useEffect trigger
         setRouteState({ routes: data.data.routes, selectedRoute: 0 });
         toast.success(`Found ${data.data.routes.length} routes! 🗺️`);
       } else {
@@ -333,10 +313,6 @@ const Routes = () => {
   };
 
   const cur = selectedRoute !== null ? routes[selectedRoute] : null;
-
-  // NEVER return early with <Loader> — that destroys mapRef!
-  // Instead show loader as overlay so map container stays mounted
-
   return (
     <div className="min-h-screen bg-white">
 
@@ -406,8 +382,6 @@ const Routes = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* HEADER */}
       <section className="relative bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 py-16">
         <div className="container mx-auto px-6 text-center">
           <h1 className="text-5xl font-black text-white mb-3">Smart Route Finder 🗺️</h1>
@@ -415,7 +389,6 @@ const Routes = () => {
         </div>
       </section>
 
-      {/* BODY */}
       <section className="py-8 bg-white">
         <div className="container mx-auto px-6">
 
@@ -428,7 +401,6 @@ const Routes = () => {
 
           <div className="grid lg:grid-cols-3 gap-6">
 
-            {/* Left panel */}
             <div className="lg:col-span-1 space-y-5">
               <div className="bg-white rounded-3xl p-6 border-2 border-gray-900 shadow-[4px_4px_0px_0px_#111827]">
                 <div className="flex items-center justify-between mb-4">
@@ -491,8 +463,6 @@ const Routes = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Route list */}
               {routes.length > 0 && (
                 <div className="bg-white rounded-3xl p-6 border-2 border-gray-900 shadow-[4px_4px_0px_0px_#111827]">
                   <h4 className="font-black text-gray-900 mb-3">🛣️ Routes ({routes.length})</h4>
@@ -515,8 +485,6 @@ const Routes = () => {
                   </div>
                 </div>
               )}
-
-              {/* Route detail */}
               {cur && (
                 <div className="bg-white rounded-3xl p-6 border-2 border-gray-900 shadow-[4px_4px_0px_0px_#111827]">
                   <h4 className="font-black text-gray-900 mb-3">📊 Route Details</h4>
@@ -544,8 +512,6 @@ const Routes = () => {
                 </div>
               )}
             </div>
-
-            {/* Map panel */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-3xl p-6 border-2 border-gray-900 shadow-[4px_4px_0px_0px_#111827]" style={{ height: '800px' }}>
                 <div className="flex items-center justify-between mb-3">
@@ -572,7 +538,6 @@ const Routes = () => {
                       </div>
                     </div>
                   )}
-                  {/* AQI Color Legend */}
                   {routes.length > 0 && (
                     <div className="absolute bottom-3 left-3 z-10 bg-white/90 backdrop-blur-sm rounded-xl border-2 border-gray-900 shadow-[3px_3px_0px_0px_#111827] px-3 py-2">
                       <p className="text-xs font-black text-gray-700 mb-1.5 uppercase tracking-wide">AQI Legend</p>

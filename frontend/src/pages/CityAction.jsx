@@ -113,7 +113,6 @@ const CityActions = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Header */}
       <section className="relative bg-gradient-to-br from-green-500 via-teal-500 to-blue-500 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0" style={{ backgroundImage: `radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
@@ -385,7 +384,6 @@ const CityActions = () => {
         </div>
       </section>
 
-      {/* Recent Interventions */}
       {interventions.length > 0 && (
         <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-6">

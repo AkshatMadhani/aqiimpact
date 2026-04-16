@@ -34,12 +34,9 @@ function AppRoutes() {
     <>
       <Navbar />
       <Routes>
-        {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
-        {/* Protected routes - require login */}
         <Route
           path="/exposure"
           element={
@@ -75,7 +72,6 @@ function AppRoutes() {
           }
         />
         
-        {/* Catch all - redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

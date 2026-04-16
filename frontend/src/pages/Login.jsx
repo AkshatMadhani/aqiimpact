@@ -63,17 +63,14 @@ const Login = () => {
       const success = await login(formData);
       
       if (success) {
-        // Don't show toast here - it's shown in AuthContext
         navigate('/');
       } else {
-        // Error toast is shown in AuthContext
         setErrors({
           email: 'Invalid credentials',
           password: 'Invalid credentials'
         });
       }
     } catch (error) {
-      // Error is already handled in AuthContext
       setErrors({
         email: 'Something went wrong',
         password: 'Please try again'

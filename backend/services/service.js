@@ -85,7 +85,6 @@ If unsure, still return 5 safe recommendations.
     if (Array.isArray(parsed) && parsed.length >= 5) {
       return parsed.slice(0, 5);
     }
-
     console.warn('⚠️ AI output invalid — using fallback');
     return getEnhancedFallback(userProfile, aqiData, exposureData);
 

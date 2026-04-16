@@ -87,7 +87,6 @@ const Exposure = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Header */}
       <section className="relative bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500 overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0" style={{ backgroundImage: `radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
@@ -131,8 +130,6 @@ const Exposure = () => {
           </motion.div>
         </div>
       </section>
-
-      {/* Progress Steps */}
       <section className="py-8 bg-white relative">
         <div className="container mx-auto px-6">
           <div className="flex justify-center -mt-8">
@@ -187,7 +184,6 @@ const Exposure = () => {
           </div>
           <div className="container mx-auto px-6 relative z-10">
             <div className="grid lg:grid-cols-2 gap-8">
-              {/* Left Column - Input Form */}
               <div>
                 {step === 1 && (
                   <motion.div

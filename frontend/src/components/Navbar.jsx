@@ -1,8 +1,10 @@
+// frontend/src/components/Navbar.jsx
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Wind, User, LogOut, Shield, Menu, X, Sparkles, Calculator, Map, BarChart3 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated, isAdmin } = useAuth();
@@ -15,24 +17,26 @@ const Navbar = () => {
     setMobileMenuOpen(false);
   };
 
-  // Base nav links - everyone sees these
-  const baseNavLinks = [
-    { to: '/', label: 'Home', icon: Wind },
+  const allNavLinks = [
+    { to: '/', label: 'Home', icon: Wind, requiresAuth: false },
+    { to: '/exposure', label: 'Exposure', icon: Calculator, requiresAuth: true },
+    { to: '/routes', label: 'Routes', icon: Map, requiresAuth: true },
   ];
 
-  // Authenticated user links - only visible when logged in
-  const authNavLinks = isAuthenticated ? [
-    { to: '/exposure', label: 'Exposure', icon: Calculator },
-    { to: '/routes', label: 'Routes', icon: Map },
-  ] : [];
+  const adminNavLinks = [
+    { to: '/city-actions', label: 'City Actions', icon: BarChart3, requiresAuth: true },
+  ];
 
-  // Admin-only links - only visible to admin users
-  const adminNavLinks = isAdmin ? [
-    { to: '/city-actions', label: 'City Actions', icon: BarChart3 },
-  ] : [];
+  const handleNavigation = (e, link) => {
+    if (link.requiresAuth && !isAuthenticated) {
+      e.preventDefault();
+      toast.error('🔒 Please login to access this feature');
+      navigate('/login');
+      setMobileMenuOpen(false);
+    }
+  };
 
-  // Combine all nav links
-  const navLinks = [...baseNavLinks, ...authNavLinks, ...adminNavLinks];
+  const navLinks = [...allNavLinks, ...(isAdmin ? adminNavLinks : [])];
 
   return (
     <motion.nav
@@ -56,10 +60,13 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-2">
             {navLinks.map((link) => (
-              <Link key={link.to} to={link.to}>
+              <Link 
+                key={link.to} 
+                to={link.to} 
+                onClick={(e) => handleNavigation(e, link)}
+              >
                 <motion.div
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.95 }}
@@ -67,6 +74,9 @@ const Navbar = () => {
                 >
                   {link.icon && <link.icon className="w-4 h-4" />}
                   {link.label}
+                  {link.requiresAuth && !isAuthenticated && (
+                    <span className="text-xs text-yellow-600 ml-1">🔒</span>
+                  )}
                 </motion.div>
               </Link>
             ))}
@@ -84,7 +94,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             {isAuthenticated ? (
               <>
@@ -137,7 +146,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -147,7 +155,6 @@ const Navbar = () => {
           </motion.button>
         </div>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -157,13 +164,23 @@ const Navbar = () => {
           >
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => (
-                <Link key={link.to} to={link.to} onClick={() => setMobileMenuOpen(false)}>
+                <Link 
+                  key={link.to} 
+                  to={link.to} 
+                  onClick={(e) => {
+                    handleNavigation(e, link);
+                    setMobileMenuOpen(false);
+                  }}
+                >
                   <motion.div
                     whileTap={{ scale: 0.95 }}
                     className="px-4 py-3 rounded-xl font-bold text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 transition-all border-2 border-gray-900 flex items-center gap-2"
                   >
                     {link.icon && <link.icon className="w-4 h-4" />}
                     {link.label}
+                    {link.requiresAuth && !isAuthenticated && (
+                      <span className="text-xs text-yellow-600 ml-1">🔒</span>
+                    )}
                   </motion.div>
                 </Link>
               ))}

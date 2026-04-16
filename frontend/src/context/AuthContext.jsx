@@ -41,7 +41,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.data.token);
       setToken(data.data.token);
       setUser(data.data.user);
-      // Only show toast here, not in Login.jsx
       toast.success('Welcome back! 🎉');
       return true;
     } catch (error) {

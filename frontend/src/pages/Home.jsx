@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Calculator, Map, Shield, ArrowRight, Sparkles, TrendingUp, 
   Users, Heart, Wind, Zap, ChevronDown, Star, Award, 
-  Activity, Navigation, CheckCircle, ChevronRight, Lock, Twitter, Linkedin, Github,
-  User 
+  Activity, Navigation, CheckCircle, ChevronRight, Lock,User
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -23,9 +22,7 @@ const FeatureCard = ({ feature, index, isAuthenticated }) => {
 
   const handleClick = (e) => {
     e.preventDefault();
-    
-    // All features require login now (no public features)
-    if (!isAuthenticated) {
+        if (!isAuthenticated) {
       toast.error('🔒 Please login to access this feature');
       navigate('/login');
     } else {
@@ -390,77 +387,6 @@ const Home = () => {
           </motion.div>
         </div>
       </section>
-
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-3 rounded-xl border-2 border-white">
-                  <Wind className="w-8 h-8 text-white" />
-                </div>
-                <span className="text-3xl font-bold">Air<span className="text-yellow-300">Impact</span></span>
-              </div>
-              <p className="text-gray-400 mb-6">Your intelligent companion for navigating air quality. Making air pollution data accessible and actionable for everyone.</p>
-              <div className="flex gap-4">
-                <motion.a 
-                  href="https://twitter.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  className="bg-white/10 hover:bg-white/20 w-12 h-12 rounded-xl border-2 border-white/20 flex items-center justify-center transition-colors"
-                >
-                  <Twitter className="w-5 h-5" />
-                </motion.a>
-                <motion.a 
-                  href="https://linkedin.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  className="bg-white/10 hover:bg-white/20 w-12 h-12 rounded-xl border-2 border-white/20 flex items-center justify-center transition-colors"
-                >
-                  <Linkedin className="w-5 h-5" />
-                </motion.a>
-                <motion.a 
-                  href="https://github.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  className="bg-white/10 hover:bg-white/20 w-12 h-12 rounded-xl border-2 border-white/20 flex items-center justify-center transition-colors"
-                >
-                  <Github className="w-5 h-5" />
-                </motion.a>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-bold text-lg mb-4">Quick Links</h4>
-              <ul className="space-y-3">
-                <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Home</Link></li>
-                <li><Link to="/exposure" className="text-gray-400 hover:text-white transition-colors">Exposure Calculator</Link></li>
-                <li><Link to="/routes" className="text-gray-400 hover:text-white transition-colors">Route Finder</Link></li>
-                <li><Link to="/register" className="text-gray-400 hover:text-white transition-colors">Sign Up</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-lg mb-4">Resources</h4>
-              <ul className="space-y-3">
-                <li><a href="#about" className="text-gray-400 hover:text-white transition-colors">About AQI</a></li>
-                <li><a href="#guidelines" className="text-gray-400 hover:text-white transition-colors">Health Guidelines</a></li>
-                <li><a href="mailto:support@airimpact.com" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#faq" className="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm mb-4 md:mb-0">© 2026 AirImpact. All rights reserved.</p>
-            <div className="flex gap-6 text-sm">
-              <a href="#privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#terms" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
-              <a href="#cookies" className="text-gray-400 hover:text-white transition-colors">Cookie Policy</a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
