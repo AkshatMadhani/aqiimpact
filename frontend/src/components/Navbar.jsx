@@ -45,7 +45,6 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <motion.div
               whileHover={{ rotate: 360, scale: 1.1 }}
@@ -93,11 +92,9 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                {/* SETTINGS BUTTON - ADDED HERE */}
                 <Link to="/settings">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -109,7 +106,6 @@ const Navbar = () => {
                   </motion.button>
                 </Link>
                 
-                {/* User Profile */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-gray-900"
@@ -125,7 +121,6 @@ const Navbar = () => {
                   )}
                 </motion.div>
                 
-                {/* Logout Button */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -161,7 +156,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -171,7 +165,6 @@ const Navbar = () => {
           </motion.button>
         </div>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -216,7 +209,6 @@ const Navbar = () => {
               <div className="mt-4 pt-4 border-t-2 border-gray-900 flex flex-col gap-2">
                 {isAuthenticated ? (
                   <>
-                    {/* Mobile Settings Button */}
                     <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
                       <motion.div
                         whileTap={{ scale: 0.95 }}
