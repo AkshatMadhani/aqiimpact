@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -15,44 +14,51 @@ import policyRoutes from './routes/policy.js';
 import interventionRoutes from './routes/intervention.js';
 import suggestionRoutes from './routes/suggestion.js';
 import adminRoutes from './routes/admin.js';
+
 dotenv.config();
 const app = express();
+
 connectDB();
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  process.env.FRONTEND_URL,         
+  process.env.FRONTEND_URL,
+  'https://aqiimpact.vercel.app/',
 ].filter(Boolean);
 
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: function(origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    if (origin.endsWith('.vercel.app')) return callback(null, true);
-    callback(new Error(`CORS blocked: ${origin}`));
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(null, true); 
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 }));
 
-app.use(helmet());
-app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 if (config.nodeEnv !== 'production') {
   app.use(morgan('dev'));
 }
+
 app.get('/health', (req, res) => {
   res.status(200).json({
-    status: 'success',
+    success: true,
     message: 'AirImpact API is running',
     timestamp: new Date().toISOString(),
-    version: '2.0.0',
     env: config.nodeEnv,
   });
 });
+
 app.use('/api/auth', authRoutes);
 app.use('/api/aqi', aqiRoutes);
 app.use('/api/exposure', exposureRoutes);
@@ -72,7 +78,9 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || config.port || 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`AirImpact Backend running on port ${PORT} [${config.nodeEnv}]`);
+  console.log(`\n✅ Server running on port ${PORT}`);
+  console.log(` Environment: ${config.nodeEnv}`);
+  console.log(` CORS enabled for: ${allowedOrigins.join(', ')}\n`);
 });

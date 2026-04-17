@@ -20,17 +20,15 @@ export const calculatePersonalExposure = async (req, res) => {
         message: 'Time and activity are required',
       });
     }
+    const selectedCity = city || req.user.city;
 
     let aqiData;
     if (providedAQI) {
-      aqiData = { aqi: providedAQI, city };
+      aqiData = { aqi: providedAQI, city: selectedCity, category: getAQICategory(providedAQI) };
     } else if (city) {
       aqiData = await fetchAQI(city);
     } else {
-      return res.status(400).json({
-        success: false,
-        message: 'Either AQI or city must be provided',
-      });
+      aqiData = await fetchAQI(req.user.city);
     }
 
     const ageGroup = req.user.ageGroup;
@@ -46,20 +44,27 @@ export const calculatePersonalExposure = async (req, res) => {
     );
 
     const explanation = getRiskExplanation(exposureResult.riskLevel);
-
     let suggestions = [];
-    if (process.env.GROQ_API_KEY) {
-      try {
-        suggestions = await getPersonalizedSuggestions(
-          req.user,
-          aqiData,
-          { ...exposureResult, activity }
-        );
-      } catch (error) {
-        console.warn('AI suggestions failed:', error.message);
-      }
+    try {
+      suggestions = await getPersonalizedSuggestions(
+        {
+          ...req.user,
+          requestedCity: selectedCity,
+        },
+        aqiData,
+        { 
+          ...exposureResult, 
+          activity,
+          duration: timeMinutes,
+          location: selectedCity,
+          timeMinutes: timeMinutes
+        }
+      );
+    } catch (error) {
+      console.error('Failed to get suggestions:', error.message);
     }
 
+    // Save to history
     await ExposureHistory.create({
       userId,
       exposureScore: exposureResult.exposureScore,
@@ -73,10 +78,12 @@ export const calculatePersonalExposure = async (req, res) => {
     return res.status(200).json({
       success: true,
       data: {
-        ...exposureResult,
-        explanation,
-        suggestions,
-        aqiData,
+        exposureScore: exposureResult.exposureScore,
+        riskLevel: exposureResult.riskLevel,
+        breakdown: exposureResult.breakdown,
+        explanation: explanation,
+        suggestions: suggestions,
+        aqiData: aqiData,
       },
     });
   } catch (error) {
@@ -128,3 +135,12 @@ export const getExposureHistory = async (req, res) => {
     });
   }
 };
+
+function getAQICategory(aqi) {
+  if (aqi <= 50) return 'Good';
+  if (aqi <= 100) return 'Moderate';
+  if (aqi <= 150) return 'Unhealthy for Sensitive';
+  if (aqi <= 200) return 'Unhealthy';
+  if (aqi <= 300) return 'Very Unhealthy';
+  return 'Hazardous';
+}

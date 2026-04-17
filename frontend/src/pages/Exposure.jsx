@@ -54,28 +54,28 @@ const Exposure = () => {
   };
 
   const calculateExposure = async () => {
-    if (!formData.timeMinutes || !formData.activity) {
-      toast.error('Please fill all fields');
-      return;
-    }
+  if (!formData.timeMinutes || !formData.activity) {
+    toast.error('Please fill all fields');
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const { data } = await exposureAPI.calculate({
-        city: formData.city,
-        timeMinutes: parseInt(formData.timeMinutes),
-        activity: formData.activity,
-      });
-      setExposureResult(data.data);
-      setStep(3);
-      toast.success('Exposure calculated successfully');
-    } catch (error) {
-      toast.error('Failed to calculate exposure');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  setLoading(true);
+  try {
+    const { data } = await exposureAPI.calculate({
+      city: formData.city,  
+      timeMinutes: parseInt(formData.timeMinutes),
+      activity: formData.activity,
+    });
+    setExposureResult(data.data);
+    setStep(3);
+    toast.success('Exposure calculated successfully');
+  } catch (error) {
+    console.error('Exposure error:', error);
+    toast.error('Failed to calculate exposure');
+  } finally {
+    setLoading(false);
+  }
+};
   const resetCalculator = () => {
     setFormData({ city: 'Delhi', timeMinutes: 30, activity: 'walking' });
     setAqiData(null);

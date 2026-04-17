@@ -4,92 +4,130 @@ import config from '../config/env.js';
 const groq = config.groqApiKey ? new Groq({ apiKey: config.groqApiKey }) : null;
 
 export const getPersonalizedSuggestions = async (userProfile, aqiData, exposureData) => {
-
-  if (!groq) {
-    console.error('GROQ_API_KEY is not set in .env');
-    return ['AI recommendations unavailable. Please set GROQ_API_KEY in your backend .env file.'];
+  console.log('🎯 AI Agent: Analyzing patient data...');
+   const patientData = {
+    personal: {
+      name: userProfile.name || 'Patient',
+      age: userProfile.age || 'not provided',
+      ageGroup: userProfile.ageGroup || 'adult',
+      registeredCity: userProfile.city || 'unknown',
+    },
+    medical: {
+      conditions: [...new Set([...(userProfile.healthConditions || []), ...(userProfile.preExistingDiseases || [])])].filter(c => c && c !== 'none'),
+    },
+    exposure: {
+      score: exposureData.exposureScore || 0,
+      riskLevel: exposureData.riskLevel || 'MODERATE',
+      activity: exposureData.activity || 'walking',
+      durationMinutes: exposureData.duration || exposureData.timeMinutes || 30,
+      location: exposureData.location || userProfile.requestedCity || userProfile.city || 'unknown',
+    },
+    airQuality: {
+      aqi: aqiData.aqi || 0,
+      category: aqiData.category || 'Unknown',
+      dominantPollutant: aqiData.dominantPollutant || 'PM2.5',
+      pollutants: aqiData.pollutants || {},
+      city: aqiData.city || exposureData.location || 'unknown',
+    }
+  };
+  
+  // Check if Groq API is available
+  if (!groq || !config.groqApiKey) {
+    console.error('❌ GROQ_API_KEY not found in environment variables');
+    return [{
+      error: true,
+      message: 'Groq API key not configured. Please add GROQ_API_KEY to your backend/.env file'
+    }];
   }
 
   try {
-    const preExistingDiseases = userProfile.preExistingDiseases || [];
-    const healthConditions = userProfile.healthConditions || [];
-    const allConditions = [...new Set([...healthConditions, ...preExistingDiseases])]
-      .filter(c => c !== 'none');
+    const systemPrompt = `You are Dr. AirHealth, a senior physician specializing in environmental medicine.
 
-    const prompt = `
-You are Dr. AirHealth — a strict AI medical advisor specializing in air pollution health.
+CRITICAL: The patient is checking air quality at: ${patientData.exposure.location}
+You MUST use THIS location in your response. Do NOT invent or guess a different location.
 
-YOUR TASK:
-Generate exactly 5 personalized, actionable health recommendations.
+Your voice: Authoritative, clinical, precise. Speak like a doctor giving direct advice.
 
-PATIENT PROFILE:
-Age: ${userProfile.age || 'Not specified'} (${userProfile.ageGroup})
-Conditions: ${allConditions.length > 0 ? allConditions.join(', ') : 'None'}
-City: ${userProfile.city}
+For each recommendation:
+- Address their SPECIFIC condition by name
+- Give NUMBERS (minutes, AQI levels)
+- Tell them WARNING SIGNS to watch for
+- Tell them EXACTLY what to do
+- MENTION the location: ${patientData.exposure.location}
 
-CURRENT EXPOSURE:
-Activity: ${exposureData.activity}
-Duration: ${exposureData.duration || 'Not specified'} minutes
-Exposure Score: ${exposureData.exposureScore}
-Risk Level: ${exposureData.riskLevel}
+Return ONLY a JSON array of 5 strings. No explanations. No markdown.`;
+const userPrompt = `Patient: ${patientData.personal.age} years old, ${patientData.medical.conditions.length > 0 ? patientData.medical.conditions.join(', ') : 'no known conditions'}.
+Location they are checking: ${patientData.exposure.location}
+Current AQI at this location: ${patientData.airQuality.aqi} (${patientData.airQuality.category})
+Activity: ${patientData.exposure.activity} for ${patientData.exposure.durationMinutes} minutes
+Exposure score: ${patientData.exposure.score}
 
-AIR QUALITY:
-AQI: ${aqiData.aqi}
-Category: ${aqiData.category}
-Dominant Pollutant: ${aqiData.dominantPollutant}
-Pollutants: ${JSON.stringify(aqiData.pollutants)}
-
-STRICT RULES (DO NOT BREAK THESE):
-1. Return ONLY a valid JSON array with EXACTLY 5 strings.
-2. No explanations, no markdown, no headings, no extra text.
-3. Each item must be a full sentence recommendation.
-4. Advice must be specific to THIS patient (mention age, activity, or conditions).
-5. Consider the dominant pollutant: ${aqiData.dominantPollutant}.
-6. Recommendations must be proportional to risk level: ${exposureData.riskLevel}.
-
-OUTPUT FORMAT:
-["rec 1", "rec 2", "rec 3", "rec 4", "rec 5"]
-`;
-
+Give 5 specific medical recommendations for THIS location as JSON array.`;
+    console.log('🤖 Sending request to Groq AI...');
+    
     const completion = await groq.chat.completions.create({
       messages: [
-        {
-          role: 'system',
-          content: `
-You are Dr. AirHealth.
-You ONLY output a JSON array of 5 strings.
-No explanations, no markdown, no preamble.
-If unsure, still return 5 safe recommendations.
-`
-        },
-        { role: 'user', content: prompt }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
       ],
       model: 'llama-3.3-70b-versatile',
-      temperature: 0.6,
-      max_tokens: 800
+      temperature: 0.7,
+      max_tokens: 1000
     });
 
-    const raw = completion.choices[0]?.message?.content || '';
-    console.log('🤖 Groq raw response:', raw);
-    let parsed = null;
-
+    const aiResponse = completion.choices[0]?.message?.content || '';
+    console.log('📝 AI Response received');
+    
+    let suggestions = [];
     try {
-      parsed = JSON.parse(raw.trim());
-    } catch {
+      suggestions = JSON.parse(aiResponse);
+    } catch (e) {
+      const jsonMatch = aiResponse.match(/\[[\s\S]*?\]/);
+      if (jsonMatch) {
+        try {
+          suggestions = JSON.parse(jsonMatch[0]);
+        } catch (e2) {
+          console.error('Failed to parse AI response:', e2.message);
+        }
+      }
+    }
+    
+    if (Array.isArray(suggestions) && suggestions.length === 5) {
+      console.log('✅ AI generated 5 personalized recommendations');
+      return suggestions;
+    }
+    
+    console.warn('⚠️ AI response invalid format, retrying...');
+    
+    // Retry with simpler prompt
+    const retryCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: 'You are a doctor. Output only JSON array of 5 recommendations. No other text.' },
+        { role: 'user', content: `Patient: Age ${patientData.personal.age}, Conditions: ${patientData.medical.conditions.join(', ') || 'none'}, AQI: ${patientData.airQuality.aqi}, Exposure Score: ${patientData.exposure.score}, Activity: ${patientData.exposure.activity}. Give 5 recommendations as JSON array.` }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      max_tokens: 800
+    });
+    
+    const retryResponse = retryCompletion.choices[0]?.message?.content || '';
+    const retryMatch = retryResponse.match(/\[[\s\S]*?\]/);
+    if (retryMatch) {
       try {
-        const match = raw.match(/\[[\s\S]*\]/);
-        if (match) parsed = JSON.parse(match[0]);
-      } catch {}
+        const retrySuggestions = JSON.parse(retryMatch[0]);
+        if (Array.isArray(retrySuggestions) && retrySuggestions.length >= 5) {
+          return retrySuggestions.slice(0, 5);
+        }
+      } catch (e) {}
     }
-
-    if (Array.isArray(parsed) && parsed.length >= 5) {
-      return parsed.slice(0, 5);
-    }
-    console.warn('⚠️ AI output invalid — using fallback');
-    return getEnhancedFallback(userProfile, aqiData, exposureData);
-
-  } catch (err) {
-    console.error('❌ Groq error:', err.message);
-    return getEnhancedFallback(userProfile, aqiData, exposureData);
+    
+    // If all fails, return error message
+    return ["AI service temporarily unavailable. Please try again in a moment.", "Check your Groq API key configuration.", "Ensure backend/.env has GROQ_API_KEY set", "Restart backend after adding API key", "Contact support if issue persists"];
+    
+  } catch (error) {
+    console.error('❌ Groq API Error:', error.message);
+    return ["Unable to generate recommendations at this time.", "Please check your Groq API key configuration.", "Make sure GROQ_API_KEY is set in backend/.env", "Restart the backend server after adding the key", "If problem persists, verify your Groq account has credits"];
   }
 };
+
+export default getPersonalizedSuggestions;

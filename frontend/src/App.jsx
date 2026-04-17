@@ -9,6 +9,7 @@ import CityActions from './pages/CityAction';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
+import Settings from './pages/Settings';
 import Loader from './components/Loader';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -53,8 +54,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        
-        {/* Admin only routes */}
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/city-actions"
           element={
@@ -71,7 +78,6 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

@@ -1,7 +1,6 @@
-// frontend/src/components/Navbar.jsx
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Wind, User, LogOut, Shield, Menu, X, Sparkles, Calculator, Map, BarChart3 } from 'lucide-react';
+import { Wind, User, LogOut, Shield, Menu, X, Sparkles, Calculator, Map, BarChart3, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -94,9 +93,23 @@ const Navbar = () => {
             )}
           </div>
 
+          {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             {isAuthenticated ? (
               <>
+                {/* SETTINGS BUTTON - ADDED HERE */}
+                <Link to="/settings">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-900 font-bold rounded-xl border-2 border-gray-900 hover:bg-gray-200 transition-all"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Settings
+                  </motion.button>
+                </Link>
+                
+                {/* User Profile */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-gray-900"
@@ -111,6 +124,8 @@ const Navbar = () => {
                     </span>
                   )}
                 </motion.div>
+                
+                {/* Logout Button */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -146,6 +161,7 @@ const Navbar = () => {
             )}
           </div>
 
+          {/* Mobile Menu Button */}
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -155,6 +171,7 @@ const Navbar = () => {
           </motion.button>
         </div>
 
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -199,6 +216,17 @@ const Navbar = () => {
               <div className="mt-4 pt-4 border-t-2 border-gray-900 flex flex-col gap-2">
                 {isAuthenticated ? (
                   <>
+                    {/* Mobile Settings Button */}
+                    <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
+                      <motion.div
+                        whileTap={{ scale: 0.95 }}
+                        className="flex items-center gap-2 px-4 py-3 bg-gray-100 text-gray-900 font-bold rounded-xl border-2 border-gray-900"
+                      >
+                        <Settings className="w-4 h-4" />
+                        Settings
+                      </motion.div>
+                    </Link>
+                    
                     <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-gray-900">
                       <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-2 rounded-lg border-2 border-gray-900">
                         <User className="w-4 h-4 text-white" />
