@@ -241,6 +241,7 @@ export const findOptimalRoutes = async (fromPlace, toPlace, mode, userProfile, c
         to: to.name,
         mode,
         distance: parseFloat((route.distance / 1000).toFixed(2)),
+         duration: Math.round(route.duration / 60), 
         ...exposure,
         geometry: route.geometry, 
         legs: route.legs,
